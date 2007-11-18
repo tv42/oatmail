@@ -1,0 +1,45 @@
+#!/bin/sh
+set -e
+
+PROGNAME="$(basename "$0")"
+
+SYNC_DIR="$HOME/.oatmail-sync.d"
+
+if ! [ -e "$SYNC_DIR" ]; then
+    echo "$PROGNAME: sync directory does not exist: $SYNC_DIR" 1>&2
+    echo "$PROGNAME: create it and put symlinks pointing to git repositories in it" 1>&2
+    exit 1
+fi
+
+fix_maildirs () {
+    # git removes directories that become empty, maildir
+    # doesn't like that -- patch them back together;
+    # note this is racy but we can't do any better, with
+    # current git
+    find -mindepth 2 -maxdepth 2 -type d \
+	\( -name cur -o -name new -o -name tmp \) \
+	-printf '%h\n' \
+	| uniq \
+	| while read d; do
+	    install -d -m0755 -- "$d/cur" "$d/new" "$d/tmp"
+	done
+}
+
+find -L "$SYNC_DIR" -mindepth 1 -maxdepth 1 -type d \
+| while read DIR; do
+    cd "$DIR"
+
+    (
+        # git commit will exit 1 if nothing to commit;
+        # parens isolate that failure to subshell
+	git ls-files --deleted --modified --others -z \
+	    | git update-index --add --remove -z --stdin
+
+	git commit --quiet --no-verify -m "Modifications on $(hostname)"
+	)
+    fix_maildirs
+
+    git pull
+    fix_maildirs
+    git push
+done
