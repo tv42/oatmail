@@ -20,11 +20,6 @@ def mkdir(*a, **kw):
         else:
             raise
 
-def make_maildir(path):
-    mkdir(path, mode=0700)
-    for section in ['cur', 'new', 'tmp']:
-        mkdir(os.path.join(path, section), mode=0700)
-
 def git_rev_parse(ref):
     log_git.debug('Running rev-parse on %r', ref)
     with os.tmpfile() as f:
