@@ -58,3 +58,30 @@ def test_walk_simple_both():
     eq(g.next(), os.path.join('cur', '1202936960.V801I880d5M358047.foo:2,'))
     eq(g.next(), os.path.join('new', '1196638757.V801Ia938aM515340.eagain'))
     assert_raises(StopIteration, g.next)
+
+def test_create_simple():
+    tmp = maketemp()
+    maildir.create(os.path.join(tmp, 'mdir'))
+    eq(os.listdir(tmp), ['mdir'])
+    eq(
+        sorted(os.listdir(os.path.join(tmp, 'mdir'))),
+        sorted([
+                'cur',
+                'new',
+                'tmp',
+                ]),
+        )
+
+def test_create_exists():
+    tmp = maketemp()
+    maildir.create(os.path.join(tmp, 'mdir'))
+    maildir.create(os.path.join(tmp, 'mdir'))
+    eq(os.listdir(tmp), ['mdir'])
+    eq(
+        sorted(os.listdir(os.path.join(tmp, 'mdir'))),
+        sorted([
+                'cur',
+                'new',
+                'tmp',
+                ]),
+        )
