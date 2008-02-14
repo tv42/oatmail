@@ -68,6 +68,13 @@ def writeFile(path, content):
         f.close()
     os.rename(tmp, path)
 
+def readFile(path):
+    f = file(path)
+    try:
+        data = f.read()
+    finally:
+        f.close()
+    return data
 
 def assert_raises(excClass, callableObj, *args, **kwargs):
     """
