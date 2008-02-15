@@ -8,3 +8,5 @@
 .*.swp
 
 /oatmail/test/tmp
+/stage
+/*.egg-info

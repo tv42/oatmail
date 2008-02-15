@@ -2,9 +2,14 @@ from __future__ import with_statement
 
 import errno
 import logging
+import os
 import subprocess
 import sys
+import ConfigParser
 
+from oatmail import matcher
+
+log = logging.getLogger('oatmail.spamminess')
 log_qsf = logging.getLogger('oatmail.spamminess.qsf')
 
 def spamminess(
@@ -51,3 +56,44 @@ def spamminess(
         else:
             raise RuntimeError(
                 'qsf failed: %r' % returncode)
+
+def match_spam(
+    cfg,
+    depot,
+    folder,
+    path,
+    args,
+    ):
+    try:
+        qsf = cfg.get('qsf', 'path')
+    except (ConfigParser.NoSectionError,
+            ConfigParser.NoOptionError):
+        qsf = None
+
+    rating = spamminess(
+        path=os.path.join(depot, folder, path),
+        _qsf=qsf,
+        )
+    if rating is None:
+        log.debug('Miss %s', path)
+        return None
+    if rating > 90:
+        log.info('Spam %-3d%% %s', rating, path)
+        rounded_rating = int(round(rating/5.0)) * 5
+        data = matcher.call_matcher(
+            name=args[0],
+            cfg=cfg,
+            depot=depot,
+            folder=folder,
+            path=path,
+            args=args[1:],
+            )
+        if data is not None:
+            data.update(
+                spamminess_percentage=rating,
+                spamminess_percentage_rounded_5=rounded_rating,
+                )
+        return data
+    else:
+        log.info('Ham  %-3d%% %s', rating, path)
+        return None
