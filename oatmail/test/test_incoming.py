@@ -263,3 +263,59 @@ foo
         MAILBODY,
         )
 
+def test_process_post_colon():
+    # bah ConfigParser won't let the config keys contain either ":" or "="
+    tmp = maketemp()
+    depot = os.path.join(tmp, 'depot')
+    os.mkdir(depot)
+    incoming_path = os.path.join(depot, 'incoming')
+    maildir.create(incoming_path)
+    MAILBODY = """\
+From: bar
+To: foo
+List-Post: <mailto:FOO-users@lists.example.COM>
+Subject: foo
+
+foo
+"""
+    writeFile(
+        os.path.join(
+            incoming_path,
+            'new',
+            '1202936960.V801I880d5M358047.foo',
+            ),
+        MAILBODY,
+        )
+    cfg = ConfigParser.RawConfigParser()
+    cfg.add_section('depot %s' % depot)
+    cfg.add_section('rules incoming')
+    cfg.set(
+        'rules incoming',
+        'angle-bracket-header liST-post mailto%(colon)sfoo-USERS@lists.EXAMPLE.com',
+        'list.foo',
+        )
+    incoming.process(cfg)
+    folder = 'list.foo'
+    eq(
+        sorted(os.listdir(depot)),
+        sorted(['incoming', folder]),
+        )
+    eq(
+        list(maildir.walk(os.path.join(depot, 'incoming'))),
+        [],
+        )
+    path = os.path.join(depot, folder)
+    eq(
+        list(maildir.walk(path)),
+        [
+            'new/1202936960.V801I880d5M358047.foo',
+            ],
+        )
+    eq(
+        readFile(os.path.join(
+                path,
+                'new',
+                '1202936960.V801I880d5M358047.foo',
+                )),
+        MAILBODY,
+        )

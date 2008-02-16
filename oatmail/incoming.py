@@ -54,6 +54,11 @@ def process(cfg):
                 folder = 'INBOX'
 
                 for k,v in cfg.items('rules %s' % rules_name):
+                    k = k % dict(
+                        colon=':',
+                        equals='=',
+                        )
+                    log.debug('Rule %s = %s', k, v)
                     l = k.split(None)
                     name = l[0]
 
