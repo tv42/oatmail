@@ -8,5 +8,10 @@
 .*.swp
 
 /oatmail/test/tmp
-/stage
+
+/parts
+/.installed.cfg
+/develop-eggs
 /*.egg-info
+/eggs
+/bin
