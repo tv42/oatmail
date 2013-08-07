@@ -7,7 +7,6 @@ import ConfigParser
 
 from oatmail import (
     maildir,
-    spamminess,
     matcher,
     )
 
