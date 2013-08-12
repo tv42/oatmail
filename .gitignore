@@ -9,9 +9,5 @@
 
 /oatmail/test/tmp
 
-/parts
-/.installed.cfg
-/develop-eggs
 /*.egg-info
-/eggs
-/bin
+/virtualenv
